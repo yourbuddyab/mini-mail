@@ -17,18 +17,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return ['Laravel' => app()->version()];
-});
-
-
-Route::get('/test-mail', function () {
-    $cam = Campaign::find(1)->first();
-    Mail::raw('This is a test email', function ($message) {
-        $message->to('arjunbhati180@gmail.com')
-                ->subject('Test Email');
-    });
-
-    dd(Mail::to('arjunbhati180@gmail.com')->send(new CampaignEmail(['name' => "arjun Bhati", 'contant' => $cam->contant, 'subject' => $cam->name])));
-    return 'Event broadcasted';
-});
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '.*');
