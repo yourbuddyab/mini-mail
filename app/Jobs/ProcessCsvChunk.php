@@ -66,16 +66,11 @@ class ProcessCsvChunk implements ShouldQueue
             Email::insert($emailData);
             $this->processedEmails += count($emailData);
         }
-        Log::debug(json_encode([
-            'campaign_id' => $this->campaignId,
-            'proccesd' => intval($this->processedEmails)+intval($this->chunkSize),
-            'failed'    => ValidationFail::where('campaign_id', $this->campaignId)->count(),
-            'type'      => '1'
-        ]));
-
+        $process = intval($this->processedEmails);
+        $chunk = intval($this->chunkSize);
         $value = ProccesStatus::create([
             'campaign_id' => $this->campaignId,
-            'proccesd' => intval($this->processedEmails)+intval($this->chunkSize),
+            'proccesd' => $process <= $chunk ? $process : $process + $chunk,
             'failed'    => ValidationFail::where('campaign_id', $this->campaignId)->count(),
             'type'      => '1'
         ]);

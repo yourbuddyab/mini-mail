@@ -60,9 +60,11 @@ class SendCampaignEmail implements ShouldQueue
             }
         }
         CampaignUser::insert($saveData);
+        $process = intval($this->processedEmails);
+        $chunk = intval($this->chunkSize);
         ProccesStatus::create([
             'campaign_id' => $this->campaign->id,
-            'proccesd' => intval($this->processedEmails) + intval($this->chunkSize),
+            'proccesd' => $process <= $chunk ? $process : $process + $chunk,
             'total'    => $this->totalEmail,
             'type'      => '2'
         ]);
