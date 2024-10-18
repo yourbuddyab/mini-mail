@@ -23,7 +23,6 @@ class SendCampaignEmail implements ShouldQueue
     protected $totalEmail;
     protected $processedEmails;
     protected $chunkSize;
-
     /**
      * Create a new job instance.
      */
@@ -41,23 +40,26 @@ class SendCampaignEmail implements ShouldQueue
      */
     public function handle(): void
     {
-        foreach ($this->emails as $email) {
+        ini_set('memory_limit', '512M');
+        $saveData = [];
+        foreach ($this->emails as $key => $email) {
             try {
                 Mail::to($email->email)->send(new CampaignEmail(['name' => $email->name, 'contant' => $this->campaign->contant, 'subject' => $this->campaign->name]));
-                CampaignUser::create([
+                $saveData[] = [
                     'campaign_id' => $this->campaign->id,
                     'user_id' => $email->id,
                     'status' => '1'
-                ]);
+                ];
                 Log::debug("send to " . $email->name);
             } catch (Exception $e) {
-                CampaignUser::create([
+                $saveData[] = [
                     'campaign_id' => $this->campaign->id,
                     'user_id' => $email->id,
                     'status' => '0'
-                ]);
+                ];
             }
         }
+        CampaignUser::insert($saveData);
         ProccesStatus::create([
             'campaign_id' => $this->campaign->id,
             'proccesd' => intval($this->processedEmails) + intval($this->chunkSize),

@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ProcessCsvChunk implements ShouldQueue
@@ -65,13 +66,21 @@ class ProcessCsvChunk implements ShouldQueue
             Email::insert($emailData);
             $this->processedEmails += count($emailData);
         }
+        Log::debug(json_encode([
+            'campaign_id' => $this->campaignId,
+            'proccesd' => intval($this->processedEmails)+intval($this->chunkSize),
+            'failed'    => ValidationFail::where('campaign_id', $this->campaignId)->count(),
+            'type'      => '1'
+        ]));
 
-        ProccesStatus::create([
+        $value = ProccesStatus::create([
             'campaign_id' => $this->campaignId,
             'proccesd' => intval($this->processedEmails)+intval($this->chunkSize),
             'failed'    => ValidationFail::where('campaign_id', $this->campaignId)->count(),
             'type'      => '1'
         ]);
+
+        Log::debug(json_encode($value));
         // broadcast(new EmailSaveUpdated($this->campaignId, $this->processedEmails, $failedEmails));
     }
 }

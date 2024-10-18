@@ -11,7 +11,7 @@ class ProccesStatus extends Model
 
     protected $fillable = [
         'campaign_id',
-        'proccess',
+        'proccesd',
         'failed',
         'total',
         'type'

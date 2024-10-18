@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use League\Csv\Reader;
 
 class ProcessCsv implements ShouldQueue
@@ -44,8 +45,11 @@ class ProcessCsv implements ShouldQueue
             $chunks = array_chunk(iterator_to_array($csvData), $chunkSize);
             $processedEmails = 0;
             foreach ($chunks as $chunk) {
+                Log::debug($processedEmails."chunk data=".$chunkSize);
                 ProcessCsvChunk::dispatch($chunk, $this->campaign->id, $processedEmails, $chunkSize);
                 $processedEmails +=$chunkSize;
+                Log::debug($processedEmails."csv");
+
             }
 
             Campaign::where('id', $this->campaign->id)->update(['status' => 1]);

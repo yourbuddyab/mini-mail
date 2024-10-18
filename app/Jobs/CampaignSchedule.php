@@ -34,7 +34,7 @@ class CampaignSchedule implements ShouldQueue
     public function handle(): void
     {
         $processedEmails = 0;
-        $chunkSize = 500;
+        $chunkSize = 20;
         $totalEmail = $this->campaign->emails->count();
 
         $this->campaign->emails()->chunk($chunkSize, function ($emails) use (&$processedEmails, $chunkSize, $totalEmail) {
