@@ -18,7 +18,7 @@ class CampaignSchedule implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $campaign;
+    protected $campaign;
 
     /**
      * Create a new job instance.
@@ -34,27 +34,14 @@ class CampaignSchedule implements ShouldQueue
     public function handle(): void
     {
         $processedEmails = 0;
-        $this->campaign->emails()->chunk(2, function ($emails) use ($processedEmails) {
-            foreach ($emails as $email) {
-                try {
-                    Mail::to($email->email)->send(new CampaignEmail(['name' => $email->name, 'contant' => $this->campaign->contant, 'subject' => $this->campaign->name]));
-                    CampaignUser::create([
-                        'campaign_id' => $this->campaign->id,
-                        'user_id' => $email->id,
-                        'status' => '1'
-                    ]);
-                    $processedEmails++;
-                    Log::debug("send to " . $email->name);
-                } catch (Exception $e) {
-                    dd($e);
-                    CampaignUser::create([
-                        'campaign_id' => $this->campaign->id,
-                        'user_id' => $email->id,
-                        'status' => '0'
-                    ]);
-                }
-            }
+        $chunkSize = 500;
+        $totalEmail = $this->campaign->emails->count();
+
+        $this->campaign->emails()->chunk($chunkSize, function ($emails) use (&$processedEmails, $chunkSize, $totalEmail) {
+            SendCampaignEmail::dispatch($emails, $this->campaign, $totalEmail, $processedEmails, $chunkSize);
+            $processedEmails += $chunkSize;
         });
+
         $this->campaign->update(['status' => '2']);
     }
 }

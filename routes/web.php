@@ -1,6 +1,9 @@
 <?php
 
 use App\Events\EmailProgressUpdated;
+use App\Mail\CampaignEmail;
+use App\Models\Campaign;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,7 +22,13 @@ Route::get('/', function () {
 });
 
 
-Route::get('/broadcast-test', function () {
-    broadcast(new EmailProgressUpdated(1, 5, 10)); // Test with example values
+Route::get('/test-mail', function () {
+    $cam = Campaign::find(1)->first();
+    Mail::raw('This is a test email', function ($message) {
+        $message->to('arjunbhati180@gmail.com')
+                ->subject('Test Email');
+    });
+
+    dd(Mail::to('arjunbhati180@gmail.com')->send(new CampaignEmail(['name' => "arjun Bhati", 'contant' => $cam->contant, 'subject' => $cam->name])));
     return 'Event broadcasted';
 });

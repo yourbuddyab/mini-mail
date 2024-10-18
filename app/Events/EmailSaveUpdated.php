@@ -10,6 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class EmailSaveUpdated implements ShouldBroadcast
 {
@@ -35,8 +36,17 @@ class EmailSaveUpdated implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
+        Log::info('Broadcasting on campaign-updates channel', ['campaignId' => $this->campaignId]);
         return [
             new PrivateChannel('campaignSave'.$this->campaignId),
+        ];
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'processedEmails' => $this->processedEmails,
+            'failedEmails' => $this->failedEmails,
         ];
     }
 }

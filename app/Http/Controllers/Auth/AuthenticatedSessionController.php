@@ -3,25 +3,21 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
-class AuthenticatedController extends Controller
+class AuthenticatedSessionController extends Controller
 {
     /**
      * Handle an incoming authentication request.
      */
-    public function login(Request $request): Response
+    public function store(LoginRequest $request): Response
     {
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response([
-                'success' => false,
-                'message' => "Email and Password incorrect",
-            ]);
-        }
-        $user = Auth::user();
+        $request->authenticate();
+        $user = $request->user();
+        $user->tokens()->delete();
         return response([
             'success' => true,
             'message' => "Register successfully",
@@ -31,9 +27,8 @@ class AuthenticatedController extends Controller
             ]
         ]);
     }
-    public function logout(Request $request): Response
+    public function destroy(Request $request): Response
     {
-        // Get the authenticated user's token
         $request->user()->currentAccessToken()->delete();
 
         return response([

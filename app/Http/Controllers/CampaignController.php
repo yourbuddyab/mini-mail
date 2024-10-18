@@ -58,7 +58,8 @@ class CampaignController extends Controller
         $campaign = Campaign::create([
             'name' => $request->campaign_name,
             'user_id' => auth()->id(),
-            'csv_file' => $path
+            'csv_file' => $path,
+            'status'  => '0'
         ]);
 
         ProcessCsv::dispatch($campaign);
